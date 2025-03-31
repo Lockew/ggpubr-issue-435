@@ -52,7 +52,7 @@ NULL
 #'\item \code{p}: the p-value.
 #'\item \code{p.adj}: the adjusted p-value. Default for \code{p.adjust.method = "holm"}.
 #'\item \code{p.format}: the formatted p-value.
-#'\item \code{p..adj.format}: the formatted p-value adjusted.
+#'\item \code{p.adj.format}: the formatted p-value adjusted.
 #'\item \code{p.signif}: the significance level.
 #'\item \code{method}: the statistical test used to compare groups.
 #'
