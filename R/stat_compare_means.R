@@ -40,6 +40,8 @@ NULL
 #'@param bracket.size Width of the lines of the bracket.
 #'@param step.increase numeric vector with the increase in fraction of total
 #'  height for every additional comparison to minimize overlap.
+#'@param p.adjust.method method for adjusting p values. None by default. If a
+#'  method is specified, the adjusted p.value will be printed.
 #'@param ... other arguments to pass to \code{\link[ggplot2]{geom_text}} or
 #'  \code{\link[ggplot2:geom_text]{geom_label}}.
 #'@param na.rm If FALSE (the default), removes missing values with a warning. If
@@ -105,7 +107,9 @@ stat_compare_means <- function(mapping = NULL, data = NULL,
                      bracket.size = 0.3, step.increase = 0,
                      symnum.args = list(),
                      geom = "text", position = "identity",  na.rm = FALSE, show.legend = NA,
-                    inherit.aes = TRUE, ...) {
+                     inherit.aes = TRUE,
+                     p.adjust.method = NULL,
+                     ...) {
 
   if(!is.null(comparisons)){
 
@@ -207,6 +211,11 @@ StatCompareMeans<- ggproto("StatCompareMeans", Stat,
                                 paired = paired, ref.group = ref.group,
                                 symnum.args = symnum.args)
 
+                    if(!is.null(p.adjust.methods)){
+                      method.args <- method.args %>%
+                        .add_item(p.adjust.methods = p.adjust.methods)
+                    }
+
                     if(.is.multiple.grouping.vars){
                       method.args <- method.args %>%
                         .add_item(formula = y ~ group, group.by = "x")
@@ -218,9 +227,19 @@ StatCompareMeans<- ggproto("StatCompareMeans", Stat,
                       .test <- do.call(compare_means, method.args)
                     }
 
-                    pvaltxt <- ifelse(.test$p < 2.2e-16, "p < 2.2e-16",
-                                      paste("p =", signif(.test$p, 2)))
-                    .test$label <- paste(.test$method, pvaltxt, sep =  label.sep)
+                    if(is.null(p.adjust.methods)){
+                      pvaltxt <- ifelse(.test$p < 2.2e-16, "p < 2.2e-16",
+                                        paste("p =", signif(.test$p, 2)))
+                      .test$label <- paste(.test$method, pvaltxt, sep =  label.sep)
+                    }
+                    # If a method is specified for p.adj, we use the adjusted
+                    # p.value
+                    else{
+                      pvaltxt <- ifelse(.test$p.adj < 2.2e-16, "p < 2.2e-16",
+                                        paste("p =", signif(.test$p.adj, 2)))
+                      .test$label <- paste(.test$method, pvaltxt, sep =  label.sep)
+                    }
+
 
                     # Options for label positioning
                     #::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -300,7 +319,10 @@ StatCompareMeans<- ggproto("StatCompareMeans", Stat,
     "p.format" = quote(ggplot2::after_stat(paste0("p = ", p.format))),
     "..p.format.." = quote(ggplot2::after_stat(paste0("p = ", p.format))),
     "p" = quote(ggplot2::after_stat(paste0("p = ", p.format))),
-    "..p.." = quote(ggplot2::after_stat(paste0("p = ", p.format)))
+    "..p.." = quote(ggplot2::after_stat(paste0("p = ", p.format))),
+    "p.adj.format" = quote(ggplot2::after_stat(paste0("p = ", p.adj.format))),
+    "..p.adj.format.." = quote(ggplot2::after_stat(paste0("p = ", p.adj.format)))
+
   )
 
   if(!is.null(label)){
