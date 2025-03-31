@@ -52,6 +52,7 @@ NULL
 #'\item \code{p}: the p-value.
 #'\item \code{p.adj}: the adjusted p-value. Default for \code{p.adjust.method = "holm"}.
 #'\item \code{p.format}: the formatted p-value.
+#'\item \code{p..adj.format}: the formatted p-value adjusted.
 #'\item \code{p.signif}: the significance level.
 #'\item \code{method}: the statistical test used to compare groups.
 #'
@@ -104,7 +105,8 @@ NULL
 compare_means <- function(formula, data, method = "wilcox.test",
                           paired = FALSE,
                           group.by = NULL, ref.group = NULL,
-                          symnum.args = list(), p.adjust.method = "holm", ...)
+                          symnum.args = list(),
+                          p.adjust.method = "holm", ...)
 {
 
   . <- NULL
@@ -227,15 +229,23 @@ compare_means <- function(formula, data, method = "wilcox.test",
   pvalue.signif <- do.call(stats::symnum, symnum.args) %>%
     as.character()
 
-  pvalue.format <- format.pval(res$p, digits = 2)
 
   .y. <- p.adj <- NULL
   .p.adjust <- function(d, ...) {data.frame(p.adj = stats::p.adjust(d$p, ...))}
   by_y <- res %>% group_by(.y.)
   pvalue.adj <- do(by_y, .p.adjust(., method = p.adjust.method))
+
+
+  pvalue.format <- format.pval(res$p, digits = 2)
+  # Add the pvalue format :
+  pvalue.adj.format <- format.pval(pvalue.adj$p.adj, digits = 2)
+
+
   res <- res %>%
     dplyr::ungroup() %>%
-    mutate(p.adj = pvalue.adj$p.adj, p.format = pvalue.format, p.signif = pvalue.signif,
+    mutate(p.adj = pvalue.adj$p.adj, p.format = pvalue.format,
+           # And here in the data frame 'res' :
+           p.adj.format = pvalue.adj.format, p.signif = pvalue.signif,
            method = method.name)
 
   res %>%

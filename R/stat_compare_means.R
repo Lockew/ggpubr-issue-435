@@ -300,7 +300,10 @@ StatCompareMeans<- ggproto("StatCompareMeans", Stat,
     "p.format" = quote(ggplot2::after_stat(paste0("p = ", p.format))),
     "..p.format.." = quote(ggplot2::after_stat(paste0("p = ", p.format))),
     "p" = quote(ggplot2::after_stat(paste0("p = ", p.format))),
-    "..p.." = quote(ggplot2::after_stat(paste0("p = ", p.format)))
+    "..p.." = quote(ggplot2::after_stat(paste0("p = ", p.format))),
+    "p.adj.format" = quote(ggplot2::after_stat(paste0("p = ", p.adj.format))),
+    "..p.adj.format.." = quote(ggplot2::after_stat(paste0("p = ", p.adj.format)))
+
   )
 
   if(!is.null(label)){
