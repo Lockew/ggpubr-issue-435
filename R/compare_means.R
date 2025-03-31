@@ -104,7 +104,8 @@ NULL
 compare_means <- function(formula, data, method = "wilcox.test",
                           paired = FALSE,
                           group.by = NULL, ref.group = NULL,
-                          symnum.args = list(), p.adjust.method = "holm", ...)
+                          symnum.args = list(),
+                          p.adjust.method = "holm", p.format.adj = F, ...)
 {
 
   . <- NULL
@@ -227,12 +228,20 @@ compare_means <- function(formula, data, method = "wilcox.test",
   pvalue.signif <- do.call(stats::symnum, symnum.args) %>%
     as.character()
 
-  pvalue.format <- format.pval(res$p, digits = 2)
 
   .y. <- p.adj <- NULL
   .p.adjust <- function(d, ...) {data.frame(p.adj = stats::p.adjust(d$p, ...))}
   by_y <- res %>% group_by(.y.)
   pvalue.adj <- do(by_y, .p.adjust(., method = p.adjust.method))
+
+
+  if(p.format.adj){
+    pvalue.format <- format.pval(pvalue.adj$p.adj, digits = 2)
+  }
+  else{
+    pvalue.format <- format.pval(res$p, digits = 2)
+  }
+
   res <- res %>%
     dplyr::ungroup() %>%
     mutate(p.adj = pvalue.adj$p.adj, p.format = pvalue.format, p.signif = pvalue.signif,
